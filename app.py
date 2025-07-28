@@ -6,7 +6,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-DB = 'database.db'
+DB = os.environ.get('DATABASE_PATH', 'database.db')
 
 # -----------------------------
 # Database Setup (1x uitvoeren)

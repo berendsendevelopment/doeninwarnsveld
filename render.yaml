@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: flask-warnsveld
+    name: warnsveld-platform
     env: python
     plan: free
     buildCommand: ""
@@ -8,3 +8,6 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: DATABASE_PATH
+        value: database.db
+
