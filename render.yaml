@@ -10,4 +10,12 @@ services:
         value: production
       - key: DATABASE_PATH
         value: database.db
+      - key: MYSQL_HOST
+        value: 146.190.225.16
+      - key: MYSQL_USER
+        value: doeninwarns_dbsu
+      - key: MYSQL_PASSWORD
+        value: Berendsendevelopment2025!
+      - key: MYSQL_DB
+        value: doeninwarnsveld_dbsql
 

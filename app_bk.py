@@ -1,30 +1,18 @@
-
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import pymysql
+import sqlite3
 import os
-
-def get_db_connection():
-    return pymysql.connect(
-        host=os.environ.get('MYSQL_HOST', 'localhost'),
-        user=os.environ.get('MYSQL_USER', 'root'),
-        password=os.environ.get('MYSQL_PASSWORD', 'woodywillem'),
-        database=os.environ.get('MYSQL_DB', 'doeninwarnsveld_dbsql'),
-        charset='utf8mb4',
-        cursorclass=pymysql.cursors.Cursor
-    )
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
-DB = 'database.db'
+DB = os.environ.get('DATABASE_PATH', 'database.db')
 
 # -----------------------------
 # Database Setup (1x uitvoeren)
 # -----------------------------
 def init_db():
-    with get_db_connection() as conn:
+    with sqlite3.connect(DB) as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS users (
                         id INTEGER PRIMARY KEY,
@@ -71,7 +59,7 @@ init_db()
 # ------------------
 @app.route('/')
 def home():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute("SELECT title, date, description FROM activities ORDER BY date ASC")
     activities = c.fetchall()
@@ -88,9 +76,9 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        conn = get_db_connection()
+        conn = sqlite3.connect(DB)
         c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE username = %s", (username,))
+        c.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = c.fetchone()
         conn.close()
         if user and check_password_hash(user[2], password):
@@ -110,18 +98,18 @@ def logout():
 def manage_users():
     if not session.get('is_admin'):
         return redirect(url_for('dashboard'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         if 'delete' in request.form:
-            c.execute("DELETE FROM users WHERE id = %s", (request.form['delete'],))
+            c.execute("DELETE FROM users WHERE id = ?", (request.form['delete'],))
         else:
             username = request.form['username']
             password = generate_password_hash(request.form['password'])
             organization = request.form['organization']
             is_admin = 1 if request.form.get('is_admin') else 0
             try:
-                c.execute("INSERT INTO users (username, password, organization, is_admin) VALUES (%s, %s, %s, %s)",
+                c.execute("INSERT INTO users (username, password, organization, is_admin) VALUES (?, ?, ?, ?)",
                           (username, password, organization, is_admin))
             except sqlite3.IntegrityError:
                 flash("Gebruikersnaam bestaat al.")
@@ -138,7 +126,7 @@ def manage_users():
 def dashboard():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute("SELECT * FROM supplies")
     supplies_all = c.fetchall()
@@ -150,7 +138,7 @@ def profile():
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
 
     if request.method == 'POST':
@@ -166,15 +154,15 @@ def profile():
         if password:
             from werkzeug.security import generate_password_hash
             hashed = generate_password_hash(password)
-            c.execute("UPDATE users SET email=%s, address=%s, password=%s WHERE username=%s",
+            c.execute("UPDATE users SET email=?, address=?, password=? WHERE username=?",
                       (email, address, hashed, session['user']))
         else:
-            c.execute("UPDATE users SET email=%s, address=%s WHERE username=%s",
+            c.execute("UPDATE users SET email=?, address=? WHERE username=?",
                       (email, address, session['user']))
         conn.commit()
         flash('Profiel bijgewerkt.')
 
-    c.execute("SELECT * FROM users WHERE username=%s", (session['user'],))
+    c.execute("SELECT * FROM users WHERE username=?", (session['user'],))
     user = c.fetchone()
     conn.close()
     return render_template('profiel.html', user=user)
@@ -183,7 +171,7 @@ def profile():
 def activities():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         title = request.form['title']
@@ -197,7 +185,7 @@ def activities():
             flash('Ongeldig datumformaat. Gebruik JJJJ-MM-DD.')
             return redirect(url_for('activities'))
         
-        c.execute("INSERT INTO activities (title, date, description, organization) VALUES (%s, %s, %s, %s)",
+        c.execute("INSERT INTO activities (title, date, description, organization) VALUES (?, ?, ?, ?)",
                   (title, date, description, session['org']))
         conn.commit()
     c.execute("SELECT * FROM activities ORDER BY date ASC")
@@ -210,20 +198,20 @@ def edit_activity(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
 
     if request.method == 'POST':
         title = request.form['title']
         date = request.form['date']
         description = request.form['description']
-        c.execute("UPDATE activities SET title=%s, date=%s, description=%s WHERE id=%s AND organization=%s",
+        c.execute("UPDATE activities SET title=?, date=?, description=? WHERE id=? AND organization=?",
                   (title, date, description, id, session['org']))
         conn.commit()
         conn.close()
         return redirect(url_for('activities'))
 
-    c.execute("SELECT * FROM activities WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("SELECT * FROM activities WHERE id=? AND organization=?", (id, session['org']))
     activity = c.fetchone()
     conn.close()
 
@@ -238,9 +226,9 @@ def delete_activity(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DELETE FROM activities WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("DELETE FROM activities WHERE id=? AND organization=?", (id, session['org']))
     conn.commit()
     conn.close()
 
@@ -250,12 +238,12 @@ def delete_activity(id):
 def vacancies():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        c.execute("INSERT INTO vacancies (title, organization, description) VALUES (%s, %s, %s)",
+        c.execute("INSERT INTO vacancies (title, organization, description) VALUES (?, ?, ?)",
                   (title, session['org'], description))
         conn.commit()
     c.execute("SELECT * FROM vacancies")
@@ -267,9 +255,9 @@ def vacancies():
 def vacancy_detail(id):
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("SELECT id, title, description, organization FROM vacancies WHERE id=%s", (id,))
+    c.execute("SELECT id, title, description, organization FROM vacancies WHERE id=?", (id,))
     vacancy = c.fetchone()
     conn.close()
     if not vacancy:
@@ -283,18 +271,18 @@ def edit_vacancy(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
 
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
-        c.execute("UPDATE vacancies SET title=%s, description=%s WHERE id=%s AND organization=%s", (title, description, id, session['org']))
+        c.execute("UPDATE vacancies SET title=?, description=? WHERE id=? AND organization=?", (title, description, id, session['org']))
         conn.commit()
         conn.close()
         return redirect(url_for('vacancies'))
 
-    c.execute("SELECT * FROM vacancies WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("SELECT * FROM vacancies WHERE id=? AND organization=?", (id, session['org']))
     vacancy = c.fetchone()
     conn.close()
 
@@ -309,9 +297,9 @@ def delete_vacancy(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DELETE FROM vacancies WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("DELETE FROM vacancies WHERE id=? AND organization=?", (id, session['org']))
     conn.commit()
     conn.close()
 
@@ -321,12 +309,12 @@ def delete_vacancy(id):
 def supplies():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         item = request.form['item']
         quantity = request.form['quantity']
-        c.execute("INSERT INTO supplies (organization, item, quantity) VALUES (%s, %s, %s)",
+        c.execute("INSERT INTO supplies (organization, item, quantity) VALUES (?, ?, ?)",
                   (session['org'], item, quantity))
         conn.commit()
     c.execute("SELECT * FROM supplies")
@@ -339,18 +327,18 @@ def edit_supply(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         item = request.form['item']
         quantity = request.form['quantity']
-        c.execute("UPDATE supplies SET item=%s, quantity=%s WHERE id=%s AND organization=%s",
+        c.execute("UPDATE supplies SET item=?, quantity=? WHERE id=? AND organization=?",
                   (item, quantity, id, session['org']))
         conn.commit()
         conn.close()
         return redirect(url_for('supplies'))
 
-    c.execute("SELECT * FROM supplies WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("SELECT * FROM supplies WHERE id=? AND organization=?", (id, session['org']))
     supply = c.fetchone()
     conn.close()
 
@@ -365,9 +353,9 @@ def delete_supply(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DELETE FROM supplies WHERE id=%s AND organization=%s", (id, session['org']))
+    c.execute("DELETE FROM supplies WHERE id=? AND organization=?", (id, session['org']))
     conn.commit()
     conn.close()
 
@@ -377,14 +365,14 @@ def delete_supply(id):
 def knowledge():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
         organization = session['org']
         created_at = datetime.now().strftime('%d-%m-%Y')
-        c.execute("INSERT INTO knowledgebase (title, content, author_org, created_at) VALUES (%s, %s, %s, %s)",
+        c.execute("INSERT INTO knowledgebase (title, content, author_org, created_at) VALUES (?, ?, ?, ?)",
                 (title, content, organization, created_at))
         conn.commit()
     c.execute("SELECT id, title, content, author_org, created_at FROM knowledgebase ORDER BY created_at DESC")
@@ -396,9 +384,9 @@ def knowledge():
 def knowledge_detail(id):
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("SELECT id, title, content, author_org, created_at FROM knowledgebase WHERE id=%s", (id,))
+    c.execute("SELECT id, title, content, author_org, created_at FROM knowledgebase WHERE id=?", (id,))
     post = c.fetchone()
     conn.close()
     if not post:
@@ -412,19 +400,19 @@ def edit_knowledge(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
 
     if request.method == 'POST':
         title = request.form['title']
         content = request.form['content']
-        c.execute("UPDATE knowledgebase SET title=%s, content=%s WHERE id=%s AND author_org=%s",
+        c.execute("UPDATE knowledgebase SET title=?, content=? WHERE id=? AND author_org=?",
                   (title, content, id, session['org']))
         conn.commit()
         conn.close()
         return redirect(url_for('knowledge'))
 
-    c.execute("SELECT * FROM knowledgebase WHERE id=%s AND author_org=%s", (id, session['org']))
+    c.execute("SELECT * FROM knowledgebase WHERE id=? AND author_org=?", (id, session['org']))
     post = c.fetchone()
     conn.close()
 
@@ -439,9 +427,9 @@ def delete_knowledge(id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DELETE FROM knowledgebase WHERE id=%s AND author_org=%s", (id, session['org']))
+    c.execute("DELETE FROM knowledgebase WHERE id=? AND author_org=?", (id, session['org']))
     conn.commit()
     conn.close()
 
@@ -451,7 +439,7 @@ def delete_knowledge(id):
 def contacts():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute("SELECT * FROM civil_contacts")
     contacts = c.fetchall()
@@ -468,9 +456,9 @@ def new_contact():
         name = request.form['name']
         role = request.form['role']
         email = request.form['email']
-        conn = get_db_connection()
+        conn = sqlite3.connect(DB)
         c = conn.cursor()
-        c.execute("INSERT INTO civil_contacts (name, role, email) VALUES (%s, %s, %s)", (name, role, email))
+        c.execute("INSERT INTO civil_contacts (name, role, email) VALUES (?, ?, ?)", (name, role, email))
         conn.commit()
         conn.close()
         return redirect(url_for('contacts'))
@@ -483,18 +471,18 @@ def edit_contact(id):
         flash('Alleen beheerders mogen contacten bewerken.')
         return redirect(url_for('contacts'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     if request.method == 'POST':
         name = request.form['name']
         role = request.form['role']
         email = request.form['email']
-        c.execute("UPDATE civil_contacts SET name=%s, role=%s, email=%s WHERE id=%s", (name, role, email, id))
+        c.execute("UPDATE civil_contacts SET name=?, role=?, email=? WHERE id=?", (name, role, email, id))
         conn.commit()
         conn.close()
         return redirect(url_for('contacts'))
 
-    c.execute("SELECT * FROM civil_contacts WHERE id=%s", (id,))
+    c.execute("SELECT * FROM civil_contacts WHERE id=?", (id,))
     contact = c.fetchone()
     conn.close()
     if not contact:
@@ -509,9 +497,9 @@ def delete_contact(id):
         flash('Alleen beheerders mogen contacten verwijderen.')
         return redirect(url_for('contacts'))
 
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DELETE FROM civil_contacts WHERE id=%s", (id,))
+    c.execute("DELETE FROM civil_contacts WHERE id=?", (id,))
     conn.commit()
     conn.close()
     return redirect(url_for('contacts'))
@@ -520,7 +508,7 @@ def delete_contact(id):
 def organizations():
     if 'user' not in session:
         return redirect(url_for('login'))
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute("SELECT * FROM users")
     orgs = c.fetchall()
@@ -529,7 +517,7 @@ def organizations():
 
 @app.route('/api/activities')
 def api_activities():
-    conn = get_db_connection()
+    conn = sqlite3.connect(DB)
     c = conn.cursor()
     c.execute("SELECT title, date, description FROM activities")
     data = [{"title": row[0], "start": row[1], "description": row[2]} for row in c.fetchall()]
