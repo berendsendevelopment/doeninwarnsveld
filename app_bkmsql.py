@@ -1,16 +1,19 @@
+
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-import psycopg2
+import pymysql
 import os
 
 def get_db_connection():
-    return psycopg2.connect(
-        host=os.environ.get('POSTGRES_HOST', '146.190.225.16'),
-        database=os.environ.get('POSTGRES_DB', 'doeninwarnsveld_db'),
-        user=os.environ.get('POSTGRES_USER', 'doeninwarnsveld_dbu'),
-        password=os.environ.get('POSTGRES_PASSWORD', 'Berendsendevelopment2025!')
+    return pymysql.connect(
+        host=os.environ.get('MYSQL_HOST', '146.190.225.16'),
+        user=os.environ.get('MYSQL_USER', 'doeninwarns_dbsu'),
+        password=os.environ.get('MYSQL_PASSWORD', 'Berendsendevelopment2025!'),
+        database=os.environ.get('MYSQL_DB', 'doeninwarnsveld_dbsql'),
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.Cursor
     )
 
 app = Flask(__name__)
@@ -24,13 +27,11 @@ def init_db():
     with get_db_connection() as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS users (
-                       id SERIAL PRIMARY KEY,
-                        username TEXT,
+                        id INTEGER PRIMARY KEY,
+                        username TEXT UNIQUE,
                         password TEXT,
                         organization TEXT,
-                        is_admin BOOLEAN DEFAULT FALSE,
-                        email TEXT,
-                        address TEXT)''')
+                        is_admin INTEGER DEFAULT 0)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS activities (
                         id INTEGER PRIMARY KEY,
@@ -55,8 +56,7 @@ def init_db():
                         id INTEGER PRIMARY KEY,
                         title TEXT,
                         content TEXT,
-                        author_org TEXT,
-                        created_at TEXT)''')
+                        author_org TEXT)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS civil_contacts (
                         id INTEGER PRIMARY KEY,
