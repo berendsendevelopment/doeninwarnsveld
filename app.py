@@ -8,9 +8,9 @@ import os
 
 def get_db_connection():
     return pymysql.connect(
-        host=os.environ.get('MYSQL_HOST', 'localhost'),
-        user=os.environ.get('MYSQL_USER', 'root'),
-        password=os.environ.get('MYSQL_PASSWORD', 'woodywillem'),
+        host=os.environ.get('MYSQL_HOST', '146.190.225.16'),
+        user=os.environ.get('MYSQL_USER', 'doeninwarns_dbsu'),
+        password=os.environ.get('MYSQL_PASSWORD', 'Berendsendevelopment2025!'),
         database=os.environ.get('MYSQL_DB', 'doeninwarnsveld_dbsql'),
         charset='utf8mb4',
         cursorclass=pymysql.cursors.Cursor
