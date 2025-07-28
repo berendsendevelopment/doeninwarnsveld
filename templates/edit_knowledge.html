@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Kennisitem bewerken{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Kennisitem bewerken</h1>
+<form method="POST" class="space-y-4 max-w-xl">
+    <input name="title" value="{{ post[1] }}" placeholder="Titel" class="w-full p-2 border rounded" required>
+    <textarea id="editor" name="content" class="w-full p-2 border rounded">{{ post[2] }}</textarea>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
+    <a href="/knowledge" class="ml-4 text-gray-600 hover:underline">Annuleren</a>
+</form>
+<script>
+  ClassicEditor
+    .create(document.querySelector('#editor'))
+    .catch(error => { console.error(error); });
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Voorraaditem bewerken{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Voorraaditem bewerken</h1>
+<form method="POST" class="space-y-4 max-w-xl">
+    <input name="item" value="{{ supply[2] }}" placeholder="Item" class="w-full p-2 border rounded" required>
+    <input type="number" name="quantity" value="{{ supply[3] }}" class="w-full p-2 border rounded" required>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
+    <a href="/supplies" class="ml-4 text-gray-600 hover:underline">Annuleren</a>
+</form>
+{% endblock %}

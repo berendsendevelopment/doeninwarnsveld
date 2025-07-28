@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Mijn Profiel{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Mijn Profiel</h1>
+<form method="POST" class="space-y-4 max-w-xl">
+    <label for="">E-mailadres</label>
+    <input name="email" value="{{ user[5] }}" type="email" placeholder="E-mailadres" class="w-full p-2 border rounded mb-4" required>
+    <label for="" class="pt-2 inline-block">Adres</label>
+    <input name="address" value="{{ user[6] }}" placeholder="Adres" class="w-full p-2 border rounded" required>
+    <hr class="my-4">
+    <p class="text-sm text-gray-600">Laat wachtwoordvelden leeg als je het wachtwoord niet wilt wijzigen.</p>
+    <input name="password" type="password" placeholder="Nieuw wachtwoord" class="w-full p-2 border rounded">
+    <input name="confirm" type="password" placeholder="Bevestig nieuw wachtwoord" class="w-full p-2 border rounded">
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
+</form>
+{% endblock %}

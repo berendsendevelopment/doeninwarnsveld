@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}{{ vacancy[1] }}{% endblock %}
+{% block content %}
+<article class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-3xl font-bold mb-2">{{ vacancy[1] }}</h1>
+    <p class="text-sm text-gray-500 mb-4">
+        Geplaatst door {{ vacancy[3] }}
+    </p>
+    <div class="prose prose-sm max-w-none">
+        {{ vacancy[2] | safe }}
+    </div>
+    <a href="{{ url_for('vacancies') }}" class="inline-block mt-6 text-blue-500 hover:underline">← Terug naar overzicht</a>
+</article>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block title %}Kennisbank{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Kennisbank</h1>
+<form method="POST" class="mb-6 space-y-2">
+    <input name="title" placeholder="Titel" class="w-full p-2 border rounded" required>
+    <textarea id="editor-new" name="content" class="w-full p-2 border rounded"></textarea>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Plaatsen</button>
+</form>
+<script>
+  ClassicEditor
+    .create(document.querySelector('#editor-new'))
+    .catch(error => { console.error(error); });
+</script>
+<ul>
+    {% for post in posts %}
+    <li class="mb-4 bg-white p-4 rounded shadow">
+        <strong>{{ post[1] }}</strong>
+        {% if post[3] == session.org %}
+        <div class="mt-2">
+            <a href="/knowledge/edit/{{ post[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
+            <form method="POST" action="/knowledge/delete/{{ post[0] }}" class="inline ml-2">
+                <button onclick="return confirm('Verwijderen?')" class="text-red-500 hover:underline">Verwijderen</button>
+            </form>
+        </div>
+        {% endif %}
+        <div class="mt-2 prose prose-sm max-w-none">{{ post[2] | safe }}</div>
+        <em class="block mt-1 text-sm text-gray-500">{{ post[3] }} — geplaatst op {{ post[4] }}</em>
+        <strong><a href="{{ url_for('knowledge_detail', id=post[0]) }}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Lees bericht</a></strong>
+        
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

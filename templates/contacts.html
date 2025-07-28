@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Gemeenteambtenaren{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Gemeenteambtenaren</h1>
+<ul class="mb-4">
+    {% for c in contacts %}
+    <li class="mb-2">
+        {{ c[1] }} - {{ c[2] }} (<a href="mailto:{{ c[3] }}" class="text-blue-500">{{ c[3] }}</a>)
+        {% if session.is_admin %}
+        <div class="mt-1">
+            <a href="/contacts/edit/{{ c[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
+            <form method="POST" action="/contacts/delete/{{ c[0] }}" class="inline ml-2">
+                <button onclick="return confirm('Weet je zeker dat je deze contactpersoon wilt verwijderen?')" class="text-red-500 hover:underline">Verwijderen</button>
+            </form>
+        </div>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% if session.is_admin %}
+<a href="/contacts/new" class="bg-green-600 text-white px-4 py-2 rounded">Nieuwe contactpersoon toevoegen</a>
+{% endif %}
+{% endblock %}

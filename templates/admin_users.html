@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Gebruikersbeheer{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Gebruikersbeheer</h1>
+
+<h2 class="text-xl font-semibold mb-2">Nieuwe gebruiker toevoegen</h2>
+<form method="POST" class="mb-6 space-y-2 max-w-md">
+    <input name="username" placeholder="Gebruikersnaam" class="w-full p-2 border rounded" required>
+    <input type="password" name="password" placeholder="Wachtwoord" class="w-full p-2 border rounded" required>
+    <input name="organization" placeholder="Organisatie" class="w-full p-2 border rounded" required>
+    <label class="inline-flex items-center">
+        <input type="checkbox" name="is_admin" class="mr-2"> Admin rechten
+    </label>
+    <button class="bg-green-600 text-white px-4 py-2 rounded">Gebruiker toevoegen</button>
+</form>
+
+<h2 class="text-xl font-semibold mb-2">Bestaande gebruikers</h2>
+<table class="table-auto w-full border-collapse">
+    <thead>
+        <tr class="bg-gray-100">
+            <th class="border px-4 py-2">Gebruikersnaam</th>
+            <th class="border px-4 py-2">Organisatie</th>
+            <th class="border px-4 py-2">Is Admin</th>
+            <th class="border px-4 py-2">Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td class="border px-4 py-2">{{ user[1] }}</td>
+            <td class="border px-4 py-2">{{ user[2] }}</td>
+            <td class="border px-4 py-2">{{ 'Ja' if user[3] else 'Nee' }}</td>
+            <td class="border px-4 py-2">
+                {% if user[1] != session.user %}
+                <form method="POST" class="inline">
+                    <input type="hidden" name="delete" value="{{ user[0] }}">
+                    <button class="bg-red-500 text-white px-3 py-1 rounded" onclick="return confirm('Weet je het zeker?')">Verwijderen</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

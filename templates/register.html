@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Registreren{% endblock %}
+{% block content %}
+<h1 class="text-xl font-bold mb-4">Registreren</h1>
+<form method="POST" class="space-y-4 max-w-sm">
+    <input name="username" placeholder="Gebruikersnaam" class="w-full p-2 border rounded" required>
+    <input type="password" name="password" placeholder="Wachtwoord" class="w-full p-2 border rounded" required>
+    <input name="organization" placeholder="Organisatie" class="w-full p-2 border rounded" required>
+    <button class="bg-green-600 text-white px-4 py-2 rounded">Account aanmaken</button>
+</form>
+{% endblock %}

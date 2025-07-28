@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Vacature bewerken{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Vacature bewerken</h1>
+<form method="POST" class="space-y-4 max-w-xl">
+    <input name="title" value="{{ vacancy[1] }}" placeholder="Titel" class="w-full p-2 border rounded" required>
+    <textarea name="description" placeholder="Omschrijving" class="w-full p-2 border rounded" required>{{ vacancy[3] }}</textarea>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
+    <a href="/vacancies" class="ml-4 text-gray-600 hover:underline">Annuleren</a>
+</form>
+{% endblock %}

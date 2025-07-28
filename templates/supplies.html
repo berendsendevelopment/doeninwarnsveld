@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Spullenvoorraad{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Spullenvoorraad</h1>
+<form method="POST" class="mb-4 space-x-2">
+    <input name="item" placeholder="Item" class="p-2 border rounded" required>
+    <input name="quantity" type="number" placeholder="Aantal" class="p-2 border rounded" required>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Toevoegen</button>
+</form>
+{% for s in supplies %}
+<div class="mb-4 p-4 bg-white rounded shadow">
+    <strong>{{ s[2] }}</strong> — {{ s[3] }} stuks ({{ s[1] }})
+    {% if s[1] == session.org %}
+    <div class="mt-2">
+        <a href="/supplies/edit/{{ s[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
+        <form method="POST" action="/supplies/delete/{{ s[0] }}" class="inline ml-2">
+            <button onclick="return confirm('Verwijderen?')" class="text-red-500 hover:underline">Verwijderen</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+<div class="grid grid-cols-6 gap-4 w-full">
+    <a href="/activities" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Activiteiten beheren</a>
+    <a href="/vacancies" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Vacatures beheren</a>
+    <a href="/supplies" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Spullenvoorraad</a>
+    <a href="/knowledge" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Kennisbank</a>
+    <a href="/contacts" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Gemeentecontacten</a>
+    <a href="/organizations" class="block p-4 bg-white rounded shadow hover:bg-gray-100">Overige verenigingen</a>
+</div>
+
+<div class="grid grid-cols-2 mt-8">
+    <div>
+        <h2 class="text-xl font-bold mb-4">Overzicht van spullen per vereniging</h2>
+        <ul class="space-y-2">
+            {% for s in supplies_all %}
+            <li class="bg-white p-3 rounded shadow"><strong>{{ s[2] }}</strong> — {{ s[3] }} stuks bij <em>{{ s[1]
+                    }}</em></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

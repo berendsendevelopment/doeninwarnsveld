@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Activiteit bewerken{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Activiteit bewerken</h1>
+<form method="POST" class="space-y-4 max-w-xl">
+    <input name="title" value="{{ activity[1] }}" placeholder="Titel" class="w-full p-2 border rounded" required>
+    <input type="date" name="date" value="{{ activity[2] }}" class="w-full p-2 border rounded" required>
+    <textarea name="description" placeholder="Omschrijving" class="w-full p-2 border rounded" required>{{ activity[3] }}</textarea>
+    <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
+    <a href="/activities" class="ml-4 text-gray-600 hover:underline">Annuleren</a>
+</form>
+{% endblock %}
