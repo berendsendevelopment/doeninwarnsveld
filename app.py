@@ -33,33 +33,33 @@ def init_db():
                         address TEXT)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS activities (
-                        id INTEGER PRIMARY KEY,
+                        id SERIAL PRIMARY KEY,
                         title TEXT,
                         date TEXT,
                         description TEXT,
                         organization TEXT)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS vacancies (
-                        id INTEGER PRIMARY KEY,
+                        id SERIAL PRIMARY KEY,
                         title TEXT,
                         organization TEXT,
                         description TEXT)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS supplies (
-                        id INTEGER PRIMARY KEY,
+                        id SERIAL PRIMARY KEY,
                         organization TEXT,
                         item TEXT,
                         quantity INTEGER)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS knowledgebase (
-                        id INTEGER PRIMARY KEY,
+                        id SERIAL PRIMARY KEY,
                         title TEXT,
                         content TEXT,
                         author_org TEXT,
                         created_at TEXT)''')
 
         c.execute('''CREATE TABLE IF NOT EXISTS civil_contacts (
-                        id INTEGER PRIMARY KEY,
+                        id SERIAL PRIMARY KEY,
                         name TEXT,
                         role TEXT,
                         email TEXT)''')
@@ -110,8 +110,10 @@ def logout():
 def manage_users():
     if not session.get('is_admin'):
         return redirect(url_for('dashboard'))
+
     conn = get_db_connection()
     c = conn.cursor()
+
     if request.method == 'POST':
         if 'delete' in request.form:
             c.execute("DELETE FROM users WHERE id = %s", (request.form['delete'],))
@@ -119,13 +121,17 @@ def manage_users():
             username = request.form['username']
             password = generate_password_hash(request.form['password'])
             organization = request.form['organization']
-            is_admin = 1 if request.form.get('is_admin') else 0
+            is_admin = True if request.form.get('is_admin') else False
             try:
-                c.execute("INSERT INTO users (username, password, organization, is_admin) VALUES (%s, %s, %s, %s)",
-                          (username, password, organization, is_admin))
-            except sqlite3.IntegrityError:
+                c.execute("""
+                    INSERT INTO users (username, password, organization, is_admin)
+                    VALUES (%s, %s, %s, %s)
+                """, (username, password, organization, is_admin))
+            except errors.UniqueViolation:
+                conn.rollback()
                 flash("Gebruikersnaam bestaat al.")
         conn.commit()
+
     c.execute("SELECT id, username, organization, is_admin FROM users")
     users = c.fetchall()
     conn.close()
