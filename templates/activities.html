@@ -5,7 +5,7 @@
 <form method="POST" class="mb-6 space-y-2">
     <input name="title" placeholder="Titel" class="w-full p-2 border rounded" required>
     <input name="date" type="date" class="w-full p-2 border rounded" required>
-    <textarea name="description" placeholder="Omschrijving" class="w-full p-2 border rounded" required></textarea>
+    <textarea name="description" id="editor" placeholder="Omschrijving" class="w-full p-2 border rounded" required></textarea>
     <button class="bg-blue-500 text-white px-4 py-2 rounded">Toevoegen</button>
 </form>
 <ul>
@@ -25,4 +25,9 @@
     </div>
     {% endfor %}
 </ul>
+<script>
+//   ClassicEditor
+//     .create(document.querySelector('#editor'))
+//     .catch(error => { console.error(error); });
+</script>
 {% endblock %}

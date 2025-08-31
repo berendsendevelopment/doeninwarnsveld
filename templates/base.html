@@ -13,11 +13,23 @@
         .bg-thema {
             background-color: #06882f; /* Tailwind's blue-500 */
         }
+        .hero{
+            min-height: 400px;
+            background-position: center;
+            background-size: cover;
+        }
+        main {
+            min-height: calc(100vh - 128px);
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
     <nav class="bg-thema shadow p-4 flex justify-between">
-        <a href="/" class="font-bold text-lg text-white">Doen in Warnsveld</a>
+        <div class="logoSpace">
+            <img src="https://www.dorpsraadwarnsveld.nl/wp-content/themes/tailpress/images/beeld.png" alt="Logo" class="h-10 inline-block mr-4">
+            <a href="/" class="font-bold text-lg text-white">Doen in Warnsveld</a>
+        </div>
+        
         <div>
             {% if session.is_admin %}
                 <a href="/admin/users" class="mr-4 text-white hover:underline">Gebruikers</a>
@@ -27,7 +39,7 @@
                 <a href="/profile" class="mr-4 text-white hover:underline">Profiel</a>
                 <a href="/logout" class="text-white hover:underline">Uitloggen</a>
             {% else %}
-                <a href="/login" class="text-white hover:underline">Inloggen</a>
+                <!-- <a href="/login" class="text-white hover:underline">Inloggen</a> -->
             {% endif %}
         </div>
     </nav>
@@ -42,6 +54,8 @@
             {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}
+        
     </main>
+    <div class="bg-thema shadow p-4 flex justify-between"><p class="text-white text-sm">Copyright © 2025 Doen in Warnsveld</p></div>
 </body>
 </html>
