@@ -5,29 +5,42 @@
 <form method="POST" class="mb-6 space-y-2">
     <input name="title" placeholder="Titel" class="w-full p-2 border rounded" required>
     <input name="date" type="date" class="w-full p-2 border rounded" required>
-    <textarea name="description" id="editor" placeholder="Omschrijving" class="w-full p-2 border rounded" required></textarea>
+    <textarea name="description" id="editor" placeholder="Omschrijving" class="w-full p-2 border rounded"
+        required></textarea>
+    <input name="link" type="url" placeholder="Optionele link (https://...)" class="w-full p-2 border rounded">
     <button class="bg-blue-500 text-white px-4 py-2 rounded">Toevoegen</button>
 </form>
-<ul>
-    {% for a in activities %}
-    <div class="mb-4 p-4 bg-white rounded shadow">
-        <strong>{{ a[1] }}</strong> op {{ a[2] }}<br>
-        {{ a[3] }}
-        {% if a[4] == session.org %}
+<ul class="space-y-4">
+    {% for item in activities %}
+    <li class="bg-white p-4 rounded shadow">
+        <h2 class="text-xl font-semibold">{{ item[1] }}</h2>
+        <p class="text-gray-600 text-sm">Door: {{ item[4] }}</p>
+        <p class="text-gray-800">{{ item[1] }}</p>
+        <p class="text-sm text-blue-600 mt-2">Datum: {{ item[2] }}</p>
+        {% if item[5] %}
+        <a href="{{ item[5] }}" target="_blank"
+            class="inline-block mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
+            Meer informatie
+        </a>
+        {% endif %}
+        {% if item[4] == session.org %}
         <div class="mt-2">
-            <a href="/activities/edit/{{ a[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
-            <form method="POST" action="/activities/delete/{{ a[0] }}" class="inline ml-2">
+            <a href="/activities/edit/{{ item[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
+            <form method="POST" action="/activities/delete/{{ item[0] }}" class="inline ml-2">
                 <button onclick="return confirm('Verwijderen?')"
                     class="text-red-500 hover:underline">Verwijderen</button>
             </form>
         </div>
         {% endif %}
-    </div>
+    </li>
+    {% else %}
+    <p>Er zijn nog geen geplande activiteiten.</p>
     {% endfor %}
 </ul>
+
 <script>
-//   ClassicEditor
-//     .create(document.querySelector('#editor'))
-//     .catch(error => { console.error(error); });
+    //   ClassicEditor
+    //     .create(document.querySelector('#editor'))
+    //     .catch(error => { console.error(error); });
 </script>
 {% endblock %}

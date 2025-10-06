@@ -13,23 +13,40 @@
 </div>
 <div class="lg:grid lg:grid-cols-2 gap-4">
     <div class="m-4">
-        <h2 class="text-2xl font-bold mb-4">Activiteitenagenda</h1>
-            <div id='calendar' class="bg-white p-4 rounded shadow"></div>
+        <h2 class="text-2xl font-bold mb-4">Activiteitenagenda</h2>
+        <ul class="space-y-4">
+            {% for item in upcoming %}
+            <li class="bg-white p-4 rounded shadow">
+                <h2 class="text-xl font-semibold">{{ item[0] }}</h2>
+                <p class="text-gray-600 text-sm">Door: {{ item[3] }}</p>
+                <p class="text-gray-800">{{ item[1] }}</p>
+                <p class="text-sm text-blue-600 mt-2">Datum: {{ item[2] }}</p>
+                {% if item[4] %}
+                <a href="{{ item[4] }}" target="_blank" class="inline-block mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
+                    Meer informatie
+                </a>
+                {% endif %}
+            </li>
+            {% else %}
+            <p>Er zijn nog geen geplande activiteiten.</p>
+            {% endfor %}
+        </ul>
+            <!-- <div id='calendar' class="bg-white p-4 rounded shadow"></div> -->
 
             <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const calendarEl = document.getElementById('calendar');
-                    const calendar = new FullCalendar.Calendar(calendarEl, {
-                        initialView: 'dayGridMonth',
-                        locale: 'nl',
-                        events: '/api/activities',
-                        eventColor: '#3b82f6',
-                        eventClick: function (info) {
-                            alert(info.event.title + "\n" + info.event.extendedProps.description);
-                        }
-                    });
-                    calendar.render();
-                });
+                // document.addEventListener('DOMContentLoaded', function () {
+                //     const calendarEl = document.getElementById('calendar');
+                //     const calendar = new FullCalendar.Calendar(calendarEl, {
+                //         initialView: 'dayGridMonth',
+                //         locale: 'nl',
+                //         events: '/api/activities',
+                //         eventColor: '#3b82f6',
+                //         eventClick: function (info) {
+                //             alert(info.event.title + "\n" + info.event.extendedProps.description);
+                //         }
+                //     });
+                //     calendar.render();
+                // });
             </script>
     </div>
     <div class="m-4">

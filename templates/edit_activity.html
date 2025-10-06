@@ -6,6 +6,7 @@
     <input name="title" value="{{ activity[1] }}" placeholder="Titel" class="w-full p-2 border rounded" required>
     <input type="date" name="date" value="{{ activity[2] }}" class="w-full p-2 border rounded" required>
     <textarea name="description" placeholder="Omschrijving" class="w-full p-2 border rounded" required>{{ activity[3] }}</textarea>
+    <input name="link" type="url" value="{{ activity[5] }}" class="w-full p-2 border rounded" placeholder="Optionele link (https://...)">
     <button class="bg-blue-500 text-white px-4 py-2 rounded">Opslaan</button>
     <a href="/activities" class="ml-4 text-gray-600 hover:underline">Annuleren</a>
 </form>

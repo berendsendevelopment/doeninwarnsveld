@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import psycopg2
 import os
@@ -77,8 +77,16 @@ def home():
     activities = c.fetchall()
     c.execute("SELECT title, organization, description FROM vacancies")
     vacancies = c.fetchall()
+    c.execute("""
+        SELECT title, description, date, organization, link
+        FROM activities
+        WHERE date::date >= %s
+        ORDER BY date::date ASC
+        LIMIT 10
+    """, (date.today(),))
+    upcoming = c.fetchall()
     conn.close()
-    return render_template('public.html', activities=activities, vacancies=vacancies)
+    return render_template('public.html', activities=activities, vacancies=vacancies, upcoming=upcoming)
 
 # ------------------
 # Authentication
@@ -148,6 +156,7 @@ def dashboard():
     c = conn.cursor()
     c.execute("SELECT * FROM supplies")
     supplies_all = c.fetchall()
+   
     conn.close()
     return render_template('dashboard.html', supplies_all=supplies_all)
 
@@ -202,9 +211,9 @@ def activities():
         except ValueError:
             flash('Ongeldig datumformaat. Gebruik JJJJ-MM-DD.')
             return redirect(url_for('activities'))
-        
-        c.execute("INSERT INTO activities (title, date, description, organization) VALUES (%s, %s, %s, %s)",
-                  (title, date, description, session['org']))
+
+        c.execute("INSERT INTO activities (title, date, description, organization, link) VALUES (%s, %s, %s, %s, %s)",
+                  (title, date, description, session['org'], request.form.get('link')))
         conn.commit()
     c.execute("SELECT * FROM activities ORDER BY date ASC")
     activities = c.fetchall()
@@ -223,8 +232,8 @@ def edit_activity(id):
         title = request.form['title']
         date = request.form['date']
         description = request.form['description']
-        c.execute("UPDATE activities SET title=%s, date=%s, description=%s WHERE id=%s AND organization=%s",
-                  (title, date, description, id, session['org']))
+        c.execute("UPDATE activities SET title=%s, date=%s, description=%s, link=%s WHERE id=%s AND organization=%s",
+                  (title, date, description, request.form.get('link'), id, session['org']))
         conn.commit()
         conn.close()
         return redirect(url_for('activities'))
