@@ -36,6 +36,9 @@
                     <input type="hidden" name="delete" value="{{ user[0] }}">
                     <button class="bg-red-500 text-white px-3 py-1 rounded" onclick="return confirm('Weet je het zeker?')">Verwijderen</button>
                 </form>
+                
+                <a href="{{ url_for('admin_reset_password', user_id=user[0]) }}" class="ml-2 bg-yellow-500 text-white px-3 py-1 rounded">Reset wachtwoord</a>
+
                 {% endif %}
             </td>
         </tr>

@@ -8,7 +8,7 @@
     <a href="/supplies" class="block p-4 bg-white rounded shadow hover:bg-gray-100 mb-2 lg:mb-0 ">Spullenvoorraad</a>
     <a href="/knowledge" class="block p-4 bg-white rounded shadow hover:bg-gray-100 mb-2 lg:mb-0 ">Kennisbank</a>
     <a href="/contacts" class="block p-4 bg-white rounded shadow hover:bg-gray-100 mb-2 lg:mb-0 ">Gemeentecontacten</a>
-    <a href="/organizations" class="block p-4 bg-white rounded shadow hover:bg-gray-100 mb-2 lg:mb-0 ">Overige verenigingen</a>
+    <a href="/organizations" class="block p-4 bg-white rounded shadow hover:bg-gray-100 mb-2 lg:mb-0 ">Deelnemers</a>
 </div>
 
 <div class="grid grid-cols-2 mt-8">
@@ -16,8 +16,7 @@
         <h2 class="text-xl font-bold mb-4">Overzicht van spullen per vereniging</h2>
         <ul class="space-y-2">
             {% for s in supplies_all %}
-            <li class="bg-white p-3 rounded shadow"><strong>{{ s[2] }}</strong> — {{ s[3] }} stuks bij <em>{{ s[1]
-                    }}</em></li>
+                <li class="bg-white p-3 rounded shadow"><strong>{{ s[2] }}</strong> — {{ s[3] }} stuks bij <em>{{ s[1] }}</em></li>
             {% endfor %}
         </ul>
     </div>

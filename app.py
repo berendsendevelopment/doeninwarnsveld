@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, session, flash
+from flask import Flask, render_template, redirect, url_for, request, session, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, date
 from flask import Flask, render_template, request, redirect, url_for, session, flash
@@ -145,6 +145,53 @@ def manage_users():
     conn.close()
     return render_template('admin_users.html', users=users)
 
+@app.route('/admin/users/reset_password/<int:user_id>', methods=['GET', 'POST'])
+def admin_reset_password(user_id):
+    # Alleen admin toegestaan
+    if not session.get('is_admin'):
+        return redirect(url_for('dashboard'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Haal gebruiker op (voor weergave en validatie)
+    cur.execute("SELECT id, username, organization FROM users WHERE id = %s", (user_id,))
+    user = cur.fetchone()
+
+    if not user:
+        conn.close()
+        flash('Gebruiker niet gevonden.')
+        return redirect(url_for('manage_users'))  # of 'admin_users' route naam
+
+    if request.method == 'POST':
+        pw = request.form.get('password', '')
+        pw_confirm = request.form.get('confirm', '')
+
+        # eenvoudige validatie
+        if not pw:
+            flash('Vul een nieuw wachtwoord in.')
+            return render_template('admin_reset_password.html', user=user)
+        if pw != pw_confirm:
+            flash('Wachtwoorden komen niet overeen.')
+            return render_template('admin_reset_password.html', user=user)
+
+        # Hash en update
+        hashed = generate_password_hash(pw)
+        try:
+            cur.execute("UPDATE users SET password = %s WHERE id = %s", (hashed, user_id))
+            conn.commit()
+            flash(f'Wachtwoord voor gebruiker {user[1]} succesvol aangepast.')
+        except Exception as e:
+            conn.rollback()
+            flash('Er trad een fout op bij het bijwerken van het wachtwoord.')
+        finally:
+            conn.close()
+
+        # Optioneel: audit log of e-mail-notificatie toevoegen
+        return redirect(url_for('manage_users'))
+
+    conn.close()
+    return render_template('admin_reset_password.html', user=user)
 # ------------------
 # Dashboard & Data Routes
 # ------------------
@@ -551,6 +598,14 @@ def api_activities():
     conn.close()
     return data
 
+
+# Template filter
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format="%d-%m-%Y"):
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").strftime(format)
+    except:
+        return value
 
 # ------------------
 # Run app
