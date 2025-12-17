@@ -395,13 +395,12 @@ def supplies():
     c.execute("""
             SELECT 
                 s.id,
-                s.name,
-                s.description,
                 s.organization,
+                s.item,
+                s.quantity,
                 u.email
             FROM supplies s
             JOIN users u ON u.organization = s.organization
-            ORDER BY s.name
         """)
     supplies = c.fetchall()
     conn.close()
@@ -466,11 +465,11 @@ def knowledge():
                 k.id,
                 k.title,
                 k.content,
-                k.organization,
+                k.author_org,
                 k.created_at,
                 u.email
-            FROM knowledge k
-            JOIN users u ON u.organization = k.organization
+            FROM knowledgebase k
+            JOIN users u ON u.organization = k.author_org
             ORDER BY k.created_at DESC
         """)
     posts = c.fetchall()

@@ -27,13 +27,14 @@
         {% endif %}
         <div class="mt-2 prose prose-sm max-w-none">{{ post[2] | safe }}</div>
         <em class="block mt-1 text-sm text-gray-500">{{ post[3] }} — geplaatst op {{ post[4] }}</em>
-        <strong><a href="{{ url_for('knowledge_detail', id=post[0]) }}"
-                class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Lees
-                bericht</a></strong>
-        <a href="mailto:{{ post[5] }}" class="inline-block mt-2 text-sm text-blue-600 hover:underline">
+         <a href="mailto:{{ post[5] }}" class="block mt-2 text-sm text-blue-600 hover:underline">
             Neem contact op met {{ post[3] }}
         </a>
 
+        <strong><a href="{{ url_for('knowledge_detail', id=post[0]) }}"
+                class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Lees
+                bericht</a></strong>
+       
     </li>
     {% endfor %}
 </ul>
