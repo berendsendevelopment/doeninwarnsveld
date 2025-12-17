@@ -391,7 +391,18 @@ def supplies():
         c.execute("INSERT INTO supplies (organization, item, quantity) VALUES (%s, %s, %s)",
                   (session['org'], item, quantity))
         conn.commit()
-    c.execute("SELECT * FROM supplies")
+    # c.execute("SELECT * FROM supplies")
+    c.execute("""
+            SELECT 
+                s.id,
+                s.name,
+                s.description,
+                s.organization,
+                u.email
+            FROM supplies s
+            JOIN users u ON u.organization = s.organization
+            ORDER BY s.name
+        """)
     supplies = c.fetchall()
     conn.close()
     return render_template('supplies.html', supplies=supplies)
@@ -449,7 +460,19 @@ def knowledge():
         c.execute("INSERT INTO knowledgebase (title, content, author_org, created_at) VALUES (%s, %s, %s, %s)",
                 (title, content, organization, created_at))
         conn.commit()
-    c.execute("SELECT id, title, content, author_org, created_at FROM knowledgebase ORDER BY created_at DESC")
+    # c.execute("SELECT id, title, content, author_org, created_at FROM knowledgebase ORDER BY created_at DESC")
+    c.execute("""
+            SELECT 
+                k.id,
+                k.title,
+                k.content,
+                k.organization,
+                k.created_at,
+                u.email
+            FROM knowledge k
+            JOIN users u ON u.organization = k.organization
+            ORDER BY k.created_at DESC
+        """)
     posts = c.fetchall()
     conn.close()
     return render_template('knowledge.html', posts=posts)

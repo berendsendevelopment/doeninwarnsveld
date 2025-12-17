@@ -8,9 +8,9 @@
     <button class="bg-blue-500 text-white px-4 py-2 rounded">Plaatsen</button>
 </form>
 <script>
-  ClassicEditor
-    .create(document.querySelector('#editor-new'))
-    .catch(error => { console.error(error); });
+    ClassicEditor
+        .create(document.querySelector('#editor-new'))
+        .catch(error => { console.error(error); });
 </script>
 <ul>
     {% for post in posts %}
@@ -20,14 +20,20 @@
         <div class="mt-2">
             <a href="/knowledge/edit/{{ post[0] }}" class="text-blue-500 hover:underline">Bewerken</a>
             <form method="POST" action="/knowledge/delete/{{ post[0] }}" class="inline ml-2">
-                <button onclick="return confirm('Verwijderen?')" class="text-red-500 hover:underline">Verwijderen</button>
+                <button onclick="return confirm('Verwijderen?')"
+                    class="text-red-500 hover:underline">Verwijderen</button>
             </form>
         </div>
         {% endif %}
         <div class="mt-2 prose prose-sm max-w-none">{{ post[2] | safe }}</div>
         <em class="block mt-1 text-sm text-gray-500">{{ post[3] }} — geplaatst op {{ post[4] }}</em>
-        <strong><a href="{{ url_for('knowledge_detail', id=post[0]) }}" class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Lees bericht</a></strong>
-        
+        <strong><a href="{{ url_for('knowledge_detail', id=post[0]) }}"
+                class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-4">Lees
+                bericht</a></strong>
+        <a href="mailto:{{ post[5] }}" class="inline-block mt-2 text-sm text-blue-600 hover:underline">
+            Neem contact op met {{ post[3] }}
+        </a>
+
     </li>
     {% endfor %}
 </ul>
