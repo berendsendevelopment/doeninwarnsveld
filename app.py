@@ -82,7 +82,6 @@ def home():
         FROM activities
         WHERE date::date >= %s
         ORDER BY date::date ASC
-        LIMIT 10
     """, (date.today(),))
     upcoming = c.fetchall()
     conn.close()

@@ -1,35 +1,40 @@
 {% extends 'base.html' %}
 {% block title %}Home - Doen in Warnsveld{% endblock %}
 {% block content %}
-<div class="hero w-full flex items-center mb-6 h-10" style="background-image: url('{{url_for("static", filename="heroimage.jpeg")}}');"></div>
+<div class="hero w-full flex items-center mb-6 h-10" style="background-image: url('{{url_for("static", filename="heroimage.jpeg" )}}');"></div>
 <div class="lg:w-2/3 p-4">
     <h1 class="text-2xl font-bold mb-6">Dé agenda van Warnsveld</h1>
-    <p class="mb-4">  
-Wil je een avondje uit of zoek je een zinvolle besteding van je vrije tijd? 
-    </br>
-Dit is dé site om te kijken wat er te doen is in Warnsveld. 
-</br>
-In de agenda vind je wanneer, wat en waar er iets te doen is. 
-</br>
-Via de knop “meer informatie” kom je op de website van degene die de activiteit organiseert. 
-</br>
-<!-- Zie je bij de vrijwilligersvacatures een interessante functie staan, neem dan via de knop “meer informatie” contact op.  -->
-</p>
+    <p class="mb-4">
+        Wil je een avondje uit of zoek je een zinvolle besteding van je vrije tijd?
+        </br>
+        Dit is dé site om te kijken wat er te doen is in Warnsveld.
+        </br>
+        In de agenda vind je wanneer, wat en waar er iets te doen is.
+        </br>
+        Via de knop “meer informatie” kom je op de website van degene die de activiteit organiseert.
+        </br>
+        <!-- Zie je bij de vrijwilligersvacatures een interessante functie staan, neem dan via de knop “meer informatie” contact op.  -->
+    </p>
     <!-- <a href="/dashboard" class="inline-block bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Ga naar
         Dashboard</a> -->
 </div>
 <div class="lg:grid lg:grid-cols-2 gap-4">
     <div class="m-4">
         <h2 class="text-2xl font-bold mb-4">Activiteitenagenda</h2>
-        <ul class="space-y-4">
+        <ul class="space-y-4" id="activities">
             {% for item in upcoming %}
-            <li class="bg-white p-4 rounded shadow">
+            <li class="bg-white p-4 rounded shadow activity-item hidden relative">
+                <!-- Datum badge -->
+                <div class="absolute top-2 right-2 bg-green-600 text-white text-l px-3 py-1 rounded">
+                    <strong>{{ item[2] | datetimeformat }}</strong>
+                </div>
                 <h2 class="text-xl font-semibold">{{ item[0] }}</h2>
-                <p class="text-sm text-blue-600 mt-2 mb-2">Datum: {{ item[2] | datetimeformat }}</p>
+                <!-- <p class="text-sm text-blue-600 mt-2 mb-2">Datum: {{ item[2] | datetimeformat }}</p> -->
                 <p class="text-gray-600 text-sm">Door: {{ item[3] }}</p>
                 <p class="text-gray-800">{{ item[1] }}</p>
                 {% if item[4] %}
-                <a href="{{ item[4] }}" target="_blank" class="inline-block mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
+                <a href="{{ item[4] }}" target="_blank"
+                    class="inline-block mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
                     Meer informatie
                 </a>
                 {% endif %}
@@ -38,32 +43,92 @@ Via de knop “meer informatie” kom je op de website van degene die de activit
             <p>Er zijn nog geen geplande activiteiten.</p>
             {% endfor %}
         </ul>
-            <!-- <div id='calendar' class="bg-white p-4 rounded shadow"></div> -->
 
-            <script>
-                // document.addEventListener('DOMContentLoaded', function () {
-                //     const calendarEl = document.getElementById('calendar');
-                //     const calendar = new FullCalendar.Calendar(calendarEl, {
-                //         initialView: 'dayGridMonth',
-                //         locale: 'nl',
-                //         events: '/api/activities',
-                //         eventColor: '#3b82f6',
-                //         eventClick: function (info) {
-                //             alert(info.event.title + "\n" + info.event.extendedProps.description);
-                //         }
-                //     });
-                //     calendar.render();
-                // });
-            </script>
+        <button id="loadMore" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
+            Toon meer aankomende activiteiten
+        </button>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const items = document.querySelectorAll(".activity-item");
+                const loadMoreBtn = document.getElementById("loadMore");
+                let visible = 5;
+
+                function updateVisibility() {
+                    items.forEach((item, index) => {
+                        item.style.display = index < visible ? "block" : "none";
+                    });
+
+                    if (visible >= items.length) {
+                        loadMoreBtn.style.display = "none";
+                    }
+                }
+
+                loadMoreBtn.addEventListener("click", function () {
+                    visible += 5;
+                    updateVisibility();
+                });
+
+                updateVisibility();
+            });
+        </script>
+
+        <!-- <div id='calendar' class="bg-white p-4 rounded shadow"></div> -->
+
+        <script>
+
+            // document.addEventListener('DOMContentLoaded', function () {
+            //     const calendarEl = document.getElementById('calendar');
+            //     const calendar = new FullCalendar.Calendar(calendarEl, {
+            //         initialView: 'dayGridMonth',
+            //         locale: 'nl',
+            //         events: '/api/activities',
+            //         eventColor: '#3b82f6',
+            //         eventClick: function (info) {
+            //             alert(info.event.title + "\n" + info.event.extendedProps.description);
+            //         }
+            //     });
+            //     calendar.render();
+            // });
+        </script>
     </div>
     <div class="m-4">
         <h2 class="text-xl font-bold mb-4">Vrijwilligersvacatures</h2>
-        <ul>
+        <ul class="space-y-4">
             {% for v in vacancies %}
-            <li class="mb-2"><strong>{{ v[1] }}</strong> - {{ v[2] }}<br>{{ v[3] }}</li>
+            <li class="bg-white p-4 rounded shadow">
+                <h2 class="text-xl font-semibold">{{ v[1] }}</h2>
+                <p class="text-gray-800">{{ v[2] }}</p>
+            </li>
             {% endfor %}
         </ul>
     </div>
+</div>
+
+<div class="logos m-4">
+    <h2 class="text-2xl font-bold mb-8">Deelnemers Doen in Warnsveld</h2>
+    <ul class="lg:grid lg:grid-cols-6 gap-4 items-center">
+        <li><img src='{{url_for("static", filename="logos/braamveld.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/dierenweide.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/dkk.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/excelsior.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/hhw.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/hog.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/martinuskerk.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/molen.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/nak.bmp" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/perspectief.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/rcw.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/sccw.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/shtww.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/swm.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/toneel.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/warnsveldseboys.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/wsv_sport.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/zona.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/zonnebloem.jpg" )}}' class="mx-auto" style="max-height:150px;"></li>
+        <li><img src='{{url_for("static", filename="logos/dorpsraad.png" )}}' class="mx-auto" style="max-height:150px;"></li>
+    </ul>
 </div>
 
 

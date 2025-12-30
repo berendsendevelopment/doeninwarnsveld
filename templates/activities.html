@@ -12,9 +12,12 @@
 </form>
 <ul class="space-y-4">
     {% for item in activities %}
-    <li class="bg-white p-4 rounded shadow">
+    <li class="bg-white p-4 rounded shadow relative">
+        <div class="absolute top-2 right-2 bg-green-600 text-white text-l px-3 py-1 rounded">
+            <strong>{{ item[2] | datetimeformat }}</strong>
+        </div>
         <h2 class="text-xl font-semibold">{{ item[1] }}</h2>
-        <p class="text-sm text-blue-600 mt-2 mb-2">Datum: {{ item[2] | datetimeformat }}</p>
+        <!-- <p class="text-sm text-blue-600 mt-2 mb-2">Datum: {{ item[2] | datetimeformat }}</p> -->
         <p class="text-gray-600 text-sm">Door: {{ item[4] }}</p>
         <p class="text-gray-800">{{ item[1] }}</p>
         {% if item[5] %}
