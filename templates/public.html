@@ -21,78 +21,152 @@
 <div class="lg:grid lg:grid-cols-2 gap-4">
     <div class="m-4">
         <h2 class="text-2xl font-bold mb-4">Activiteitenagenda</h2>
-        <ul class="space-y-4" id="activities">
-            {% for item in upcoming %}
-            <li class="bg-white p-4 rounded shadow activity-item hidden relative">
-                <!-- Datum badge -->
-                <div class="absolute top-2 right-2 bg-green-600 text-white text-l px-3 py-1 rounded">
-                    <strong>{{ item[2] | datetimeformat }}</strong>
+        <div class="bg-white p-4 rounded shadow space-y-4">
+            <div class="mb-4">
+                <label for="org-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter op deelnemer</label>
+                <select id="org-filter" class="w-full rounded border-gray-300 p-2" style="border-width:1px;">
+                    <option value="">Alle deelnemers</option>
+                    {% for org in organizations %}
+                    <option value="{{ org }}">{{ org }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="block lg:hidden">
+                <h3 class="text-lg font-semibold mb-3">Mobiel overzicht</h3>
+                <div id="mobile-activity-list" class="space-y-4">
+                    {% for item in upcoming %}
+                    <div class="border border-gray-200 rounded p-4 bg-gray-50 activity-card" data-org="{{ item[3] }}">
+                        <div class="flex justify-between items-start gap-3 mb-2">
+                            <div>
+                                <p class="text-sm text-gray-500">{{ item[2] | datetimeformat }}</p>
+                                <h3 class="text-lg font-semibold">{{ item[0] }}</h3>
+                            </div>
+                            <span class="text-sm text-green-700 bg-green-100 px-2 py-1 rounded-full">{{ item[3] }}</span>
+                        </div>
+                        <p class="text-gray-700 mb-2">{{ item[1] }}</p>
+                        {% if item[4] %}
+                        <a href="{{ item[4] }}" target="_blank" class="text-blue-600 hover:underline">Meer informatie</a>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-600">Er zijn nog geen geplande activiteiten.</p>
+                    {% endfor %}
                 </div>
-                <h2 class="text-xl font-semibold">{{ item[0] }}</h2>
-                <!-- <p class="text-sm text-blue-600 mt-2 mb-2">Datum: {{ item[2] | datetimeformat }}</p> -->
-                <p class="text-gray-600 text-sm">Door: {{ item[3] }}</p>
-                <p class="text-gray-800">{{ item[1] }}</p>
-                {% if item[4] %}
-                <a href="{{ item[4] }}" target="_blank"
-                    class="inline-block mt-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded">
-                    Meer informatie
-                </a>
-                {% endif %}
-            </li>
-            {% else %}
-            <p>Er zijn nog geen geplande activiteiten.</p>
-            {% endfor %}
-        </ul>
-
-        <button id="loadMore" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">
-            Toon meer aankomende activiteiten
-        </button>
-
+            </div>
+            <div class="hidden lg:block">
+                <div id="calendar"></div>
+            </div>
+        </div>
+       
         <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const items = document.querySelectorAll(".activity-item");
-                const loadMoreBtn = document.getElementById("loadMore");
-                let visible = 5;
+            document.addEventListener('DOMContentLoaded', function () {
+                const activitiesRaw = {{ upcoming | tojson | safe }};
+                const events = activitiesRaw.map(item => ({
+                    title: item[0],
+                    description: item[1],
+                    start: item[2],
+                    organization: item[3],
+                    link: item[4]
+                }));
 
-                function updateVisibility() {
-                    items.forEach((item, index) => {
-                        item.style.display = index < visible ? "block" : "none";
+                const dayEventsContainer = document.getElementById('day-events');
+                const daySummary = document.getElementById('day-summary');
+
+                function formatDateLabel(dateStr) {
+                    const date = new Date(dateStr + 'T00:00:00');
+                    return date.toLocaleDateString('nl-NL', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                     });
-
-                    if (visible >= items.length) {
-                        loadMoreBtn.style.display = "none";
-                    }
                 }
 
-                loadMoreBtn.addEventListener("click", function () {
-                    visible += 5;
-                    updateVisibility();
+                function renderEventsForDate(dateStr) {
+                    const selectedEvents = events.filter(event => event.start === dateStr);
+                    dayEventsContainer.innerHTML = '';
+
+                    if (!selectedEvents.length) {
+                        daySummary.textContent = 'Er staan geen geplande evenementen op deze dag.';
+                        return;
+                    }
+
+                    daySummary.textContent = 'Evenementen op ' + formatDateLabel(dateStr) + ':';
+
+                    selectedEvents.forEach(event => {
+                        const eventCard = document.createElement('div');
+                        eventCard.className = 'border border-gray-200 rounded p-4 bg-gray-50';
+                        eventCard.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-lg">${event.title}</span>
+                                <span class="text-sm text-green-700 bg-green-100 px-2 py-1 rounded-full">${event.organization || 'Activiteit'}</span>
+                            </div>
+                            <p class="text-gray-700 mb-2">${event.description || 'Geen beschrijving beschikbaar.'}</p>
+                            ${event.link ? `<a href="${event.link}" target="_blank" class="inline-block text-blue-600 hover:underline">Meer informatie</a>` : ''}
+                        `;
+                        dayEventsContainer.appendChild(eventCard);
+                    });
+                }
+
+                const orgFilter = document.getElementById('org-filter');
+                const mobileItems = document.querySelectorAll('#mobile-activity-list .activity-card');
+                const baseEvents = events;
+
+                function updateCalendarEvents(selectedOrg) {
+                    const filteredEvents = selectedOrg ? baseEvents.filter(event => event.organization === selectedOrg) : baseEvents;
+                    calendar.removeAllEvents();
+                    calendar.addEventSource(filteredEvents);
+                }
+
+                function updateMobileList(selectedOrg) {
+                    mobileItems.forEach(item => {
+                        const itemOrg = item.dataset.org || '';
+                        item.style.display = selectedOrg && itemOrg !== selectedOrg ? 'none' : 'block';
+                    });
+                }
+
+                function applyFilter() {
+                    const selectedOrg = orgFilter.value;
+                    updateMobileList(selectedOrg);
+                    updateCalendarEvents(selectedOrg);
+                }
+
+                const calendarEl = document.getElementById('calendar');
+                const calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'nl',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,listMonth'
+                    },
+                    navLinks: true,
+                    selectable: true,
+                    dayMaxEvents: false,
+                    events: events,
+                    eventColor: '#0f766e',
+                    eventTextColor: '#ffffff',
+                    dateClick: function (info) {
+                        renderEventsForDate(info.dateStr);
+                    },
+                    eventClick: function (info) {
+                        renderEventsForDate(info.event.startStr);
+                    }
                 });
 
-                updateVisibility();
+                calendar.render();
+                orgFilter.addEventListener('change', applyFilter);
+                applyFilter();
             });
         </script>
-
-        <!-- <div id='calendar' class="bg-white p-4 rounded shadow"></div> -->
-
-        <script>
-
-            // document.addEventListener('DOMContentLoaded', function () {
-            //     const calendarEl = document.getElementById('calendar');
-            //     const calendar = new FullCalendar.Calendar(calendarEl, {
-            //         initialView: 'dayGridMonth',
-            //         locale: 'nl',
-            //         events: '/api/activities',
-            //         eventColor: '#3b82f6',
-            //         eventClick: function (info) {
-            //             alert(info.event.title + "\n" + info.event.extendedProps.description);
-            //         }
-            //     });
-            //     calendar.render();
-            // });
-        </script>
     </div>
-    <div class="m-4">
+     <div id="agenda-details" class="mt-6 bg-white p-4 rounded shadow m-4 hidden lg:block">
+            <h3 class="text-xl font-semibold mb-3">Klik op een dag om de evenementen te bekijken</h3>
+            <div id="day-summary" class="text-gray-600">In het overzicht zie je direct welke activiteiten op een dag gepland staan.</div>
+            <div id="day-events" class="mt-4 space-y-4"></div>
+        </div>
+</div>
+<div class="m-4">
         <h2 class="text-xl font-bold mb-4">Vrijwilligersvacatures</h2>
         <ul class="space-y-4">
             {% for v in vacancies %}
@@ -103,8 +177,6 @@
             {% endfor %}
         </ul>
     </div>
-</div>
-
 <div class="logos m-4">
     <h2 class="text-2xl font-bold mb-8">Deelnemers Doen in Warnsveld</h2>
     <ul class="lg:grid lg:grid-cols-6 gap-4 items-center">

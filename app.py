@@ -84,8 +84,10 @@ def home():
         ORDER BY date::date ASC
     """, (date.today(),))
     upcoming = c.fetchall()
+    c.execute("SELECT DISTINCT organization FROM activities ORDER BY organization")
+    organizations = [row[0] for row in c.fetchall()]
     conn.close()
-    return render_template('public.html', activities=activities, vacancies=vacancies, upcoming=upcoming)
+    return render_template('public.html', activities=activities, vacancies=vacancies, upcoming=upcoming, organizations=organizations)
 
 # ------------------
 # Authentication
@@ -263,8 +265,10 @@ def activities():
         conn.commit()
     c.execute("SELECT * FROM activities ORDER BY date ASC")
     activities = c.fetchall()
+    c.execute("SELECT DISTINCT organization FROM activities ORDER BY organization")
+    organizations = [row[0] for row in c.fetchall()]
     conn.close()
-    return render_template('activities.html', activities=activities)
+    return render_template('activities.html', activities=activities, organizations=organizations)
 
 @app.route('/activities/edit/<int:id>', methods=['GET', 'POST'])
 def edit_activity(id):

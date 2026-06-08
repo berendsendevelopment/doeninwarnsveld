@@ -2,6 +2,15 @@
 {% block title %}Activiteitenbeheer{% endblock %}
 {% block content %}
 <h1 class="text-2xl font-bold mb-4">Activiteitenbeheer</h1>
+<div class="mb-6">
+    <label for="org-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter op deelnemer</label>
+    <select id="org-filter" class="w-full rounded border-gray-300 p-2 mb-4">
+        <option value="">Alle deelnemers</option>
+        {% for org in organizations %}
+        <option value="{{ org }}">{{ org }}</option>
+        {% endfor %}
+    </select>
+</div>
 <form method="POST" class="mb-6 space-y-2">
     <input name="title" placeholder="Titel" class="w-full p-2 border rounded" required>
     <input name="date" type="date" class="w-full p-2 border rounded" required>
@@ -10,9 +19,9 @@
     <input name="link" type="url" placeholder="Optionele link (https://...)" class="w-full p-2 border rounded">
     <button class="bg-blue-500 text-white px-4 py-2 rounded">Toevoegen</button>
 </form>
-<ul class="space-y-4">
+<ul id="activities-list" class="space-y-4">
     {% for item in activities %}
-    <li class="bg-white p-4 rounded shadow relative">
+    <li class="bg-white p-4 rounded shadow relative activity-card" data-org="{{ item[4] }}">
         <div class="absolute top-2 right-2 bg-green-600 text-white text-l px-3 py-1 rounded">
             <strong>{{ item[2] | datetimeformat }}</strong>
         </div>
@@ -45,5 +54,21 @@
     //   ClassicEditor
     //     .create(document.querySelector('#editor'))
     //     .catch(error => { console.error(error); });
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const orgFilter = document.getElementById('org-filter');
+        const activityCards = document.querySelectorAll('#activities-list .activity-card');
+
+        function updateActivityList() {
+            const selectedOrg = orgFilter.value;
+            activityCards.forEach(card => {
+                const itemOrg = card.dataset.org || '';
+                card.style.display = selectedOrg && itemOrg !== selectedOrg ? 'none' : 'block';
+            });
+        }
+
+        orgFilter.addEventListener('change', updateActivityList);
+        updateActivityList();
+    });
 </script>
 {% endblock %}
